@@ -98,3 +98,39 @@ func TestUnreliableDeliver(t *testing.T) {
 	fmt.Println("BLOCK FOREVER")
 	select {}
 }
+
+// from: https://wicg.github.io/web-transport/#example-datagrams
+func TestDatagrams(t *testing.T) {
+	go func() {
+		association, err := createServer()
+		require.NoError(t, err)
+
+		transport := webtransport.NewSCTPTransport(association)
+
+		stream, err := transport.SendDatagrams()
+		require.NoError(t, err)
+
+		msg := make([]byte, 10)
+		fmt.Println("WRITING")
+		_, err = stream.Write(msg)
+		require.NoError(t, err)
+	}()
+
+	go func() {
+		association, err := createClient()
+		require.NoError(t, err)
+
+		transport := webtransport.NewSCTPTransport(association)
+
+		stream, err := transport.ReceiveDatagrams()
+		require.NoError(t, err)
+
+		buf := make([]byte, 10)
+		fmt.Println("READING")
+		_, err = stream.Read(buf)
+		require.NoError(t, err)
+	}()
+
+	fmt.Println("BLOCK FOREVER")
+	select {}
+}

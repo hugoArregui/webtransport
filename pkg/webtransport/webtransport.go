@@ -89,8 +89,8 @@ type BidirectionalStreamsTransport interface {
 
 type DatagramTransport interface {
 	MaxDatagramSize() uint16
-	SendDatagrams() WritableStream
-	ReceiveDatagrams() ReadableStream
+	SendDatagrams() (WritableStream, error)
+	ReceiveDatagrams() (ReadableStream, error)
 }
 
 type SCTPStream struct {
@@ -173,7 +173,22 @@ func (t *SCTPTransport) CreateBidirectionalStream() (BidirectionalStream, error)
 	return stream, nil
 }
 
-func (t *SCTPTransport) SendDatagrams() WritableStream {
+func (t *SCTPTransport) ReceiveStreams() []IncomingStream {
+	// TODO: but.. where are the received streams accepted?
+	// should be accept streams here or have goroutine or what?
+	return t.receivedStreams
+}
+
+func (t *SCTPTransport) ReceiveBidirectionalStreams() []BidirectionalStream {
+	return t.receivedBidirectionalStreams
+}
+
+func (t *SCTPTransport) MaxDatagramSize() uint16 {
+	// TODO: ideally the association should return it's MTU
+	return 1000
+}
+
+func (t *SCTPTransport) SendDatagrams() (WritableStream, error) {
 	//TODO: I don't totally get this, should we always have an open stream for this kind of thing?
 
 	// sent out of order, unreliably, and have a limited maximum size. Datagrams
@@ -186,27 +201,12 @@ func (t *SCTPTransport) SendDatagrams() WritableStream {
 	// read slowly (due to the reader being slow) but large enough to avoid
 	// dropping packets when for the stream is not read for short periods of time
 	// (due to the reader being paused).
-	return nil
+	return nil, nil
 }
 
-func (t *SCTPTransport) ReceiveStreams() []IncomingStream {
-	// TODO: but.. where are the received streams accepted?
-	// should be accept streams here or have goroutine or what?
-	return t.receivedStreams
-}
-
-func (t *SCTPTransport) ReceiveBidirectionalStreams() []BidirectionalStream {
-	return t.receivedBidirectionalStreams
-}
-
-func (t *SCTPTransport) ReceiveDatagrams() ReadableStream {
+func (t *SCTPTransport) ReceiveDatagrams() (ReadableStream, error) {
 	// TODO
-	return nil
-}
-
-func (t *SCTPTransport) MaxDatagramSize() uint16 {
-	// TODO: ideally the association should return it's MTU
-	return 1000
+	return nil, nil
 }
 
 func (t *SCTPTransport) Close(closeInfo *WebTransportCloseInfo) error {
