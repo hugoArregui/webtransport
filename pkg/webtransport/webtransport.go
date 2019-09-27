@@ -122,36 +122,21 @@ func (s *SCTPStream) AbortReading(abortInfo *StreamAbortInfo) {
 	//TODO
 }
 
-type StreamReadableStream struct {
-	incomingStreams []IncomingStream
-}
-
-func (srs *StreamReadableStream) AddStream(stream IncomingStream) {
-	srs.incomingStreams = append(srs.incomingStreams, stream)
-}
-
-func (srs *StreamReadableStream) Read(p []byte) (int, error) {
-	//TODO
-	return 0, nil
-}
-
 // NOTE: SCTPTransport implements UnidirectionalStreamsTransport, BidirectionalStreamsTransport,
 // DatagramTransport and WebTransport
 type SCTPTransport struct {
 	mux                          sync.Mutex
 	nextStreamID                 uint16
 	outgoingStreams              []OutgoingStream
-	receivedStreams              *StreamReadableStream
-	receivedBidirectionalStreams *StreamReadableStream
+	receivedStreams              []IncomingStream
+	receivedBidirectionalStreams []BidirectionalStream
 	// sentDatagrams
 	association *sctp.Association
 }
 
 func NewSCTPTransport(association *sctp.Association) *SCTPTransport {
 	return &SCTPTransport{
-		association:                  association,
-		receivedStreams:              &StreamReadableStream{},
-		receivedBidirectionalStreams: &StreamReadableStream{},
+		association: association,
 	}
 }
 
@@ -184,7 +169,7 @@ func (t *SCTPTransport) CreateBidirectionalStream() (BidirectionalStream, error)
 
 	// https://wicg.github.io/web-transport/#add-the-bidirectionalstream
 	t.outgoingStreams = append(t.outgoingStreams, stream)
-	t.receivedBidirectionalStreams.AddStream(stream)
+	t.receivedBidirectionalStreams = append(t.receivedBidirectionalStreams, stream)
 	return stream, nil
 }
 
@@ -204,13 +189,13 @@ func (t *SCTPTransport) SendDatagrams() WritableStream {
 	return nil
 }
 
-func (t *SCTPTransport) ReceiveStreams() ReadableStream {
+func (t *SCTPTransport) ReceiveStreams() []IncomingStream {
 	// TODO: but.. where are the received streams accepted?
 	// should be accept streams here or have goroutine or what?
 	return t.receivedStreams
 }
 
-func (t *SCTPTransport) ReceiveBidirectionalStreams() ReadableStream {
+func (t *SCTPTransport) ReceiveBidirectionalStreams() []BidirectionalStream {
 	return t.receivedBidirectionalStreams
 }
 

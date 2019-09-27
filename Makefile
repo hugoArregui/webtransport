@@ -1,3 +1,5 @@
+TEST_FLAGS ?= -v
+
 build:
 	go build ./pkg/webtransport/
 

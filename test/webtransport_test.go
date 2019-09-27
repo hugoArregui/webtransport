@@ -79,14 +79,14 @@ func TestUnreliableDeliver(t *testing.T) {
 
 		transport := webtransport.NewSCTPTransport(association)
 
-		stream := transport.ReceiveStreams()
-
-		buf := make([]byte, 10)
-		fmt.Println("READING")
-		_, err = stream.Read(buf)
-		require.NoError(t, err)
+		for _, stream := range transport.ReceiveStreams() {
+			buf := make([]byte, 10)
+			fmt.Println("READING")
+			_, err = stream.Readable().Read(buf)
+			require.NoError(t, err)
+		}
 	}()
 
 	fmt.Println("BLOCK FOREVER")
-	select{}
+	select {}
 }
