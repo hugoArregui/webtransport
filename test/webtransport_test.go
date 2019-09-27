@@ -55,6 +55,14 @@ func createClient() (*sctp.Association, error) {
 	})
 }
 
+func TestSCTPTransportInterfaces(t *testing.T) {
+	transport := webtransport.NewSCTPTransport(nil)
+	require.Implements(t, (*webtransport.BidirectionalStreamsTransport)(nil), transport)
+	require.Implements(t, (*webtransport.UnidirectionalStreamsTransport)(nil), transport)
+	require.Implements(t, (*webtransport.DatagramTransport)(nil), transport)
+	require.Implements(t, (*webtransport.WebTransport)(nil), transport)
+}
+
 // from: https://wicg.github.io/web-transport/#example-unreliable-delivery
 func TestUnreliableDeliver(t *testing.T) {
 	go func() {

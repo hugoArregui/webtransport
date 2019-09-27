@@ -79,12 +79,12 @@ type SendStreamParameters struct {
 
 type UnidirectionalStreamsTransport interface {
 	CreateSendStream(parameters SendStreamParameters) (SendStream, error)
-	ReceiveStreams() ReadableStream
+	ReceiveStreams() []IncomingStream
 }
 
 type BidirectionalStreamsTransport interface {
-	CreateBidirectionalStream() BidirectionalStream
-	ReceiveBidirectionalStreams() ReadableStream
+	CreateBidirectionalStream() (BidirectionalStream, error)
+	ReceiveBidirectionalStreams() []BidirectionalStream
 }
 
 type DatagramTransport interface {
@@ -122,8 +122,8 @@ func (s *SCTPStream) AbortReading(abortInfo *StreamAbortInfo) {
 	//TODO
 }
 
-// NOTE: SCTPTransport implements UnidirectionalStreamsTransport, BidirectionalStreamsTransport,
-// DatagramTransport and WebTransport
+// NOTE: SCTPTransport implements UnidirectionalStreamsTransport,
+// BidirectionalStreamsTransport, DatagramTransport and WebTransport
 type SCTPTransport struct {
 	mux                          sync.Mutex
 	nextStreamID                 uint16
