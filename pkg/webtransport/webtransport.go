@@ -1,9 +1,10 @@
-package main
+package webtransport
 
 import (
-	"github.com/pion/sctp"
 	"io"
 	"sync"
+
+	"github.com/pion/sctp"
 )
 
 // Ref: https://wicg.github.io/web-transport/
@@ -146,10 +147,9 @@ type SCTPTransport struct {
 	association *sctp.Association
 }
 
-func NewSCTPTransport() *SCTPTransport {
-	// TODO: actually create association, take the required parameters
+func NewSCTPTransport(association *sctp.Association) *SCTPTransport {
 	return &SCTPTransport{
-		association:                  nil,
+		association:                  association,
 		receivedStreams:              &StreamReadableStream{},
 		receivedBidirectionalStreams: &StreamReadableStream{},
 	}
@@ -247,18 +247,4 @@ func (t *SCTPTransport) createSCTPStream() (*SCTPStream, error) {
 func (t *SCTPTransport) State() WebTransportState {
 	// TODO: should we store state or "translate" the association state?
 	return WebTransportState(0)
-}
-
-func main() {
-	// equivalent to https://wicg.github.io/web-transport/#example-unreliable-delivery
-	transport := NewSCTPTransport()
-	msg := make([]byte, 10)
-	stream, err := transport.CreateSendStream(SendStreamParameters{DisableRetransmissions: true})
-	if err != nil {
-		panic(err)
-	}
-	_, err = stream.Writable().Write(msg)
-	if err != nil {
-		panic(err)
-	}
 }
